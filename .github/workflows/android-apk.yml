@@ -1,0 +1,53 @@
+name: Compilar APK Side B.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'sideb_flutter_id_atualizado.zip'
+      - '.github/workflows/android-apk.yml'
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obter arquivos
+        uses: actions/checkout@v4
+      - name: Instalar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Montar projeto Flutter
+        shell: bash
+        run: |
+          test -f sideb_flutter_id_atualizado.zip || { echo 'Envie sideb_flutter_id_atualizado.zip para a raiz do repositório'; exit 1; }
+          mkdir -p /tmp/sideb-sources
+          unzip -q sideb_flutter_id_atualizado.zip -d /tmp/sideb-sources
+          flutter create --platforms=android --project-name=musicratings --org=com.sideb /tmp/sideb-build
+          cp /tmp/sideb-sources/pubspec.yaml /tmp/sideb-build/pubspec.yaml
+          cp -R /tmp/sideb-sources/lib/. /tmp/sideb-build/lib/
+          cp -R /tmp/sideb-sources/test/. /tmp/sideb-build/test/
+          cp /tmp/sideb-sources/android_overrides/AndroidManifest.xml /tmp/sideb-build/android/app/src/main/AndroidManifest.xml
+          mkdir -p /tmp/sideb-build/android/app/src/main/kotlin/com/sideb/musicratings
+          cp -R /tmp/sideb-sources/android_overrides/kotlin/com/sideb/musicratings/. /tmp/sideb-build/android/app/src/main/kotlin/com/sideb/musicratings/
+          cd /tmp/sideb-build
+          flutter pub get
+          flutter test
+      - name: Compilar APK de testes
+        shell: bash
+        run: |
+          cd /tmp/sideb-build
+          flutter build apk --debug
+      - name: Disponibilizar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sideb-android-apk
+          path: /tmp/sideb-build/build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
