@@ -52,6 +52,10 @@ jobs:
           sed -i 's/f2faa3f3a4784c64bc6bcdbf90e23e9d/a0df0a300a1d4905b6ceb08f996b56f3/g' /tmp/sideb-build/lib/src/spotify.dart
           # Atualiza o app para permitir múltiplos Client IDs, sem precisar substituir o ZIP do usuário.
           base64 -d "$GITHUB_WORKSPACE/.github/patches/sideb-multi-client-ids.diff.gz.b64" | gzip -d | (cd /tmp/sideb-build && git apply -)
+          # Side B 0.3: reprodução por URI, biblioteca Spotify e avisos brancos.
+          cat "$GITHUB_WORKSPACE/.github/patches/v03.part"{1,2,3,4} > /tmp/sideb_v03.b64
+          echo "90ab2cccc58477e4323ce1a35d4e7762c95f0e39ee8c2c0609ec1fb6959304c0  /tmp/sideb_v03.b64" | sha256sum -c -
+          base64 -d /tmp/sideb_v03.b64 | gzip -d | (cd /tmp/sideb-build && git apply -)
           rm -f /tmp/sideb-build/test/widget_test.dart
           cp "$GITHUB_WORKSPACE/test/spotify_config_test.dart" /tmp/sideb-build/test/spotify_config_test.dart
           # file_picker 8.x usa compileSdk 34, incompatível com flutter_plugin_android_lifecycle (API 36).
