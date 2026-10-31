@@ -55,8 +55,8 @@ jobs:
           rm -f /tmp/sideb-build/test/widget_test.dart
           cp "$GITHUB_WORKSPACE/test/spotify_config_test.dart" /tmp/sideb-build/test/spotify_config_test.dart
           # file_picker 8.x usa compileSdk 34, incompatível com flutter_plugin_android_lifecycle (API 36).
-          # 10.3.11 preserva FilePicker.platform e usa o compileSdk do Flutter.
-          sed -i 's/file_picker: \^8\.1\.7/file_picker: ^10.3.11/' /tmp/sideb-build/pubspec.yaml
+          # 10.3.10 preserva FilePicker.platform e usa o compileSdk do Flutter.
+          sed -i 's/file_picker: \^8\.1\.7/file_picker: ^10.3.10/' /tmp/sideb-build/pubspec.yaml
           cd /tmp/sideb-build
           flutter pub get
           flutter test
