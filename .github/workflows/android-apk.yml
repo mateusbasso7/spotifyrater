@@ -64,9 +64,9 @@ jobs:
           # 10.3.10 preserva FilePicker.platform e usa o compileSdk do Flutter.
           sed -i 's/file_picker: \^8\.1\.7/file_picker: ^10.3.10/' /tmp/sideb-build/pubspec.yaml
           # John’s Reviewr 0.4: aplica interface, nome, backups compatíveis e App Remote.
-          echo "056605b9800c2d9b67575c359643a45e38f178dfec5d8355e20ee05d67b592cd  $GITHUB_WORKSPACE/.github/patches/johns_reviewr_v04.patch.gz.b64" | sha256sum -c -
+          test "$(tr -d '\\n\\r' < "$GITHUB_WORKSPACE/.github/patches/johns_reviewr_v04.patch.gz.b64" | sha256sum | cut -d ' ' -f1)" = "056605b9800c2d9b67575c359643a45e38f178dfec5d8355e20ee05d67b592cd"
           base64 -d "$GITHUB_WORKSPACE/.github/patches/johns_reviewr_v04.patch.gz.b64" | gzip -d | (cd /tmp/sideb-build && git apply -)
-          echo "22696199b5830085758026c1cc99026143782f740a32f57375196a7f4d844f18  $GITHUB_WORKSPACE/.github/patches/johns_reviewr_v04.icon.b64" | sha256sum -c -
+          test "$(tr -d '\\n\\r' < "$GITHUB_WORKSPACE/.github/patches/johns_reviewr_v04.icon.b64" | sha256sum | cut -d ' ' -f1)" = "22696199b5830085758026c1cc99026143782f740a32f57375196a7f4d844f18"
           mkdir -p /tmp/sideb-build/assets/icons
           base64 -d "$GITHUB_WORKSPACE/.github/patches/johns_reviewr_v04.icon.b64" > /tmp/sideb-build/assets/icons/johns_reviewr.png
           for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
