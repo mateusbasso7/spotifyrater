@@ -33,3 +33,21 @@ A compilação aplica automaticamente a atualização do Side B para permitir **
 Cada Client ID deve ser configurado em seu próprio Spotify Developer Dashboard com a URI de redirecionamento `sideb://callback`. Client ID não é e-mail nem ID da pessoa. O app não altera limites de uso da API Spotify.
 
 O ZIP `sideb_flutter_codigo_fonte.zip` na raiz contém o código-base; a compilação incorpora o suporte a múltiplos IDs por meio do patch versionado em `.github/patches/`, sem exigir outro upload.
+
+## Versão 0.3 — Biblioteca e reprodução por busca
+
+A nova versão permite:
+
+- Buscar músicas e álbuns no catálogo Spotify e iniciar a reprodução via API oficial.
+- Abrir um álbum e avaliar as faixas uma a uma.
+- Navegar pela **Sua Biblioteca** com filtros Playlists, Álbuns salvos, Curtidas e Avaliados.
+- Paginar a biblioteca (20 itens por página), atualizar puxando para baixo e reproduzir álbuns, playlists e faixas.
+- Mostrar avisos flutuantes com texto branco e contraste legível.
+
+**Permissões novas:** `user-library-read`, `playlist-read-private` e `playlist-read-collaborative`. Desconecte e conecte sua conta Spotify após atualizar, autorizando o novo acesso.
+
+**Reprodução:** funciona pelo Spotify Web API em uma conta Premium e em um dispositivo com Spotify ativo; quando não há dispositivo ativo, abra o Spotify e inicie uma música antes de repetir. O Side B não transmite áudio nem substitui o aplicativo Spotify. Em desenvolvimento, a leitura do conteúdo de playlists de terceiros é limitada pelas regras atuais da API.
+
+**Atualização do APK debug:** builds diferentes do GitHub Actions podem ser assinados por certificados de teste diferentes. Exporte as avaliações em JSON antes de atualizar. Se o Android recusar uma instalação sobre a anterior, desinstalar a versão velha apagará os dados locais; faça backup e importe-o depois.
+
+O GitHub Actions monta o código-base do ZIP e aplica os patches versionados em `.github/patches/`, incluindo a versão 0.3.
