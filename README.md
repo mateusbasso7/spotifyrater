@@ -35,3 +35,20 @@ O YouTube Music depende do sistema Android de sessões de mídia (é necessário
 ## Código-fonte
 
 O arquivo de código-fonte completo da versão 0.4 está disponível na conversa ChatGPT. A compilação deste repositório aplica alterações versionadas em `.github/patches/` sobre o ZIP-base, mantendo o histórico das versões anteriores.
+
+
+## Erro: "Explicit user authorization is required" (0.4.1)
+
+Esse erro é do **Spotify App Remote**: significa que o controle remoto ainda não foi autorizado para o aplicativo/usuário selecionados. Não é a mesma coisa que o erro de player ativo da Web API.
+
+Na versão **John's Reviewr 0.4.1**, o login OAuth inclui o escopo `app-remote-control` e solicita consentimento novamente. Em **Dados > Sua conta Spotify**, use **Reautorizar reprodução**; permita o acesso quando o Spotify perguntar. O botão não apaga notas.
+
+Confira no Spotify Developer Dashboard de **cada Client ID usado no celular**:
+- Redirect URI exatamente `sideb://callback`
+- Android package `com.sideb.musicratings`
+- SHA-1 do APK **específico que você instalou**, informado no `configuracao-spotify.txt` do artefato.
+- Conta Spotify Premium permitida em Development Mode, quando aplicável.
+
+O SDK já usa `showAuthView(true)`; a nova versão adiciona a permissão também ao OAuth Web PKCE. A autorização depende do Spotify instalado e pode continuar falhando por configuração ou limitações do SDK/serviço. Se for o caso, o aplicativo informa o diagnóstico em português.
+
+**Atualização de APK debug:** exporte suas notas (Dados > Exportar JSON) antes de desinstalar a versão anterior. APKs gerados em runners diferentes podem ter certificados debug distintos e exigirem reinstalação.
