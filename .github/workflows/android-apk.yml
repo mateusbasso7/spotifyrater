@@ -63,44 +63,25 @@ jobs:
           # file_picker 8.x usa compileSdk 34, incompatível com flutter_plugin_android_lifecycle (API 36).
           # 10.3.10 preserva FilePicker.platform e usa o compileSdk do Flutter.
           sed -i 's/file_picker: \^8\.1\.7/file_picker: ^10.3.10/' /tmp/sideb-build/pubspec.yaml
-          # Versão identificável: verifica que as novidades foram realmente incorporadas.
+          # Verifique que o APK recebeu os recursos novos; carimbe a versão visível.
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p = Path('/tmp/sideb-build/lib/main.dart')
           s = p.read_text()
-          assert 'Sua biblioteca.' in s, 'Aba Biblioteca não encontrada no código compilado'
-          assert 'Reproduzir música no Spotify' in s, 'Botão Play não encontrado no código compilado'
-          assert 'content: Text(message, style: const TextStyle(color: Colors.white' in s, 'Avisos brancos ausentes'
+          assert 'Sua biblioteca.' in s, 'Aba Biblioteca não foi incorporada'
+          assert 'Reproduzir música no Spotify' in s, 'Play na busca não foi incorporado'
+          assert 'content: Text(message, style: const TextStyle(color: Colors.white' in s, 'Avisos brancos não foram incorporados'
           needle = "Text('b.', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: accent, letterSpacing: -1.7)),"
-          assert needle in s, 'Marca do app não encontrada para exibir a versão'
+          assert needle in s, 'Não foi possível localizar a marca no app'
           s = s.replace(needle, needle + "\n          Text(' v0.3.1', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: accent)),", 1)
           p.write_text(s)
           pub = Path('/tmp/sideb-build/pubspec.yaml')
           source = pub.read_text()
-          import re
-          source, count = re.subn(r'(?m)^version:.*
-      - name: Compilar APK de testes
-        shell: bash
-        run: |
-          cd /tmp/sideb-build
-          flutter build apk --debug
-      - name: Identificar o instalador
-        shell: bash
-        run: |
-          cp /tmp/sideb-build/build/app/outputs/flutter-apk/app-debug.apk /tmp/sideb-build/SideB-v0.3.1-debug.apk
-          printf "Side B 0.3.1 (+4)\nCódigo: %s\nAbas: Agora | Biblioteca | Buscar | Dados\nPlay no Spotify: músicas e álbuns\nAvisos: texto branco\n" "$GITHUB_SHA" > /tmp/sideb-build/build-info.txt
-      - name: Disponibilizar APK identificado
-        uses: actions/upload-artifact@v4
-        with:
-          name: sideb-v0.3.1-android
-          path: |
-            /tmp/sideb-build/SideB-v0.3.1-debug.apk
-            /tmp/sideb-build/build-info.txt
-          if-no-files-found: error
-, 'version: 0.3.1+4', source)
+          source, count = re.subn(r'(?m)^version:.*$', 'version: 0.3.1+4', source)
           assert count == 1
           pub.write_text(source)
-          print('Side B 0.3.1: Biblioteca, Play, popups brancos e selo de versão confirmados')
+          print('Side B 0.3.1: Biblioteca, Play, avisos brancos e versão confirmados')
           PY
           cd /tmp/sideb-build
           flutter pub get
@@ -110,9 +91,16 @@ jobs:
         run: |
           cd /tmp/sideb-build
           flutter build apk --debug
-      - name: Disponibilizar APK
+      - name: Identificar o instalador
+        shell: bash
+        run: |
+          cp /tmp/sideb-build/build/app/outputs/flutter-apk/app-debug.apk /tmp/sideb-build/SideB-v0.3.1-debug.apk
+          printf 'Side B 0.3.1 (+4)\nCódigo: %s\nAbas: Agora | Biblioteca | Buscar | Dados\nPlay no Spotify: músicas e álbuns\nAvisos: texto branco\n' "$GITHUB_SHA" > /tmp/sideb-build/build-info.txt
+      - name: Disponibilizar APK identificado
         uses: actions/upload-artifact@v4
         with:
-          name: sideb-android-apk
-          path: /tmp/sideb-build/build/app/outputs/flutter-apk/app-debug.apk
+          name: sideb-v0.3.1-android
+          path: |
+            /tmp/sideb-build/SideB-v0.3.1-debug.apk
+            /tmp/sideb-build/build-info.txt
           if-no-files-found: error
