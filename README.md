@@ -51,3 +51,14 @@ A nova versão permite:
 **Atualização do APK debug:** builds diferentes do GitHub Actions podem ser assinados por certificados de teste diferentes. Exporte as avaliações em JSON antes de atualizar. Se o Android recusar uma instalação sobre a anterior, desinstalar a versão velha apagará os dados locais; faça backup e importe-o depois.
 
 O GitHub Actions monta o código-base do ZIP e aplica os patches versionados em `.github/patches/`, incluindo a versão 0.3.
+
+
+## Instalação da versão 0.3.1 e APK anterior
+
+Para identificar a versão instalada, abra o Side B e veja o **v0.3.1 junto ao logotipo**, na barra superior. A navegação inferior deve conter **Agora / Biblioteca / Buscar / Dados**. Se aparecer **Álbuns** em vez de **Biblioteca**, a versão anterior está em execução.
+
+O artefato correto do GitHub Actions se chama **sideb-v0.3.1-android**, com o arquivo **SideB-v0.3.1-debug.apk** e \`build-info.txt\`.
+
+As compilações de teste no GitHub Actions usam chaves debug geradas no runner e podem ter **assinaturas diferentes**. Portanto, ao tentar instalar o novo APK sobre uma versão antiga, o Android pode rejeitar a atualização. **Antes de desinstalar qualquer versão, use Dados > Exportar JSON e guarde o backup fora do aparelho.** Só então desinstale a versão antiga, instale SideB-v0.3.1-debug.apk e importe o JSON. Desinstalar apaga notas e demais preferências salvas no app.
+
+Esta versão tem **Biblioteca** (playlists, álbuns salvos, músicas curtidas e avaliações), **Play na pesquisa** e **avisos com texto branco**. A reprodução Spotify depende de conta Premium e dispositivo ativo.
