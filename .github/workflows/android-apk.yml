@@ -91,7 +91,7 @@ jobs:
               implementation("com.google.code.gson:gson:2.11.0")
           }
           GRADLE
-          # Consentimento explícito do App Remote via OAuth (0.4.1).
+          # Consentimento explícito do App Remote via OAuth (0.4.2).
           python3 "$GITHUB_WORKSPACE/.github/scripts/spotify_authorization_upgrade.py" /tmp/sideb-build
           python3 - <<'PY'
           from pathlib import Path
@@ -99,13 +99,13 @@ jobs:
           native = Path('/tmp/sideb-build/android/app/src/main/kotlin/com/sideb/musicratings/MainActivity.kt').read_text()
           manifest = Path('/tmp/sideb-build/android/app/src/main/AndroidManifest.xml').read_text()
           assert "John's Reviewr" in source
-          assert "v0.4.1" in source
+          assert "v0.4.2" in source
           assert "Sua biblioteca." in source
           assert "playUri" in native and "SpotifyAppRemote.connect" in native
           assert 'app-remote-control' in Path('/tmp/sideb-build/lib/src/spotify.dart').read_text()
           assert 'Reautorizar reprodução' in source
           assert "John&#39;s Reviewr" in manifest
-          print("John's Reviewr 0.4.1: identidade, biblioteca, controle Spotify e consentimento preparado")
+          print("John's Reviewr 0.4.2: identidade, biblioteca, controle Spotify e consentimento preparado")
           PY
           cd /tmp/sideb-build
           flutter pub get
@@ -118,9 +118,9 @@ jobs:
       - name: Identificar instalador e assinatura Spotify
         shell: bash
         run: |
-          cp /tmp/sideb-build/build/app/outputs/flutter-apk/app-debug.apk /tmp/sideb-build/Johns-Reviewr-v0.4.1-debug.apk
+          cp /tmp/sideb-build/build/app/outputs/flutter-apk/app-debug.apk /tmp/sideb-build/Johns-Reviewr-v0.4.2-debug.apk
           {
-            echo "John's Reviewr 0.4.1 (+6)"
+            echo "John's Reviewr 0.4.2 (+7)"
             echo "Commit: $GITHUB_SHA"
             echo "Android package: com.sideb.musicratings (mantido para preservar avaliações)"
             echo "Spotify Redirect URI: sideb://callback (mantida)"
@@ -131,7 +131,7 @@ jobs:
           } > /tmp/sideb-build/configuracao-spotify.txt
           APK_SIGNER="$(find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
           test -n "$APK_SIGNER"
-          "$APK_SIGNER" verify --print-certs /tmp/sideb-build/Johns-Reviewr-v0.4.1-debug.apk > /tmp/sideb-build/certificate-details.txt
+          "$APK_SIGNER" verify --print-certs /tmp/sideb-build/Johns-Reviewr-v0.4.2-debug.apk > /tmp/sideb-build/certificate-details.txt
           python3 - <<'PY' >> /tmp/sideb-build/configuracao-spotify.txt
           import re
           from pathlib import Path
@@ -146,8 +146,8 @@ jobs:
       - name: Disponibilizar APK John's Reviewr
         uses: actions/upload-artifact@v4
         with:
-          name: johns-reviewr-v0.4.1-android
+          name: johns-reviewr-v0.4.2-android
           path: |
-            /tmp/sideb-build/Johns-Reviewr-v0.4.1-debug.apk
+            /tmp/sideb-build/Johns-Reviewr-v0.4.2-debug.apk
             /tmp/sideb-build/configuracao-spotify.txt
           if-no-files-found: error
