@@ -63,25 +63,40 @@ jobs:
           # file_picker 8.x usa compileSdk 34, incompatível com flutter_plugin_android_lifecycle (API 36).
           # 10.3.10 preserva FilePicker.platform e usa o compileSdk do Flutter.
           sed -i 's/file_picker: \^8\.1\.7/file_picker: ^10.3.10/' /tmp/sideb-build/pubspec.yaml
-          # Verifique que o APK recebeu os recursos novos; carimbe a versão visível.
+          # John’s Reviewr 0.4: aplica interface, nome, backups compatíveis e App Remote.
+          echo "056605b9800c2d9b67575c359643a45e38f178dfec5d8355e20ee05d67b592cd  $GITHUB_WORKSPACE/.github/patches/johns_reviewr_v04.patch.gz.b64" | sha256sum -c -
+          base64 -d "$GITHUB_WORKSPACE/.github/patches/johns_reviewr_v04.patch.gz.b64" | gzip -d | (cd /tmp/sideb-build && git apply -)
+          echo "22696199b5830085758026c1cc99026143782f740a32f57375196a7f4d844f18  $GITHUB_WORKSPACE/.github/patches/johns_reviewr_v04.icon.b64" | sha256sum -c -
+          mkdir -p /tmp/sideb-build/assets/icons
+          base64 -d "$GITHUB_WORKSPACE/.github/patches/johns_reviewr_v04.icon.b64" > /tmp/sideb-build/assets/icons/johns_reviewr.png
+          for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            mkdir -p "/tmp/sideb-build/android/app/src/main/res/mipmap-$density"
+            cp /tmp/sideb-build/assets/icons/johns_reviewr.png "/tmp/sideb-build/android/app/src/main/res/mipmap-$density/ic_launcher.png"
+          done
+          # A biblioteca oficial permite iniciar o player do Spotify instalado.
+          mkdir -p /tmp/sideb-build/android/app/libs
+          curl --fail --location --retry 3 --retry-delay 3 \
+            "https://github.com/spotify/android-sdk/releases/download/v0.8.0-appremote_v2.1.0-auth/spotify-app-remote-release-0.8.0.aar" \
+            -o /tmp/sideb-build/android/app/libs/spotify-app-remote-release-0.8.0.aar
+          test "$(stat -c %s /tmp/sideb-build/android/app/libs/spotify-app-remote-release-0.8.0.aar)" -gt 100000
+          cat >> /tmp/sideb-build/android/app/build.gradle.kts <<'GRADLE'
+
+          dependencies {
+              implementation(files("libs/spotify-app-remote-release-0.8.0.aar"))
+              implementation("com.google.code.gson:gson:2.11.0")
+          }
+          GRADLE
           python3 - <<'PY'
           from pathlib import Path
-          import re
-          p = Path('/tmp/sideb-build/lib/main.dart')
-          s = p.read_text()
-          assert 'Sua biblioteca.' in s, 'Aba Biblioteca não foi incorporada'
-          assert 'Reproduzir música no Spotify' in s, 'Play na busca não foi incorporado'
-          assert 'content: Text(message, style: const TextStyle(color: Colors.white' in s, 'Avisos brancos não foram incorporados'
-          needle = "Text('b.', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: accent, letterSpacing: -1.7)),"
-          assert needle in s, 'Não foi possível localizar a marca no app'
-          s = s.replace(needle, needle + "\n          Text(' v0.3.1', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: accent)),", 1)
-          p.write_text(s)
-          pub = Path('/tmp/sideb-build/pubspec.yaml')
-          source = pub.read_text()
-          source, count = re.subn(r'(?m)^version:.*$', 'version: 0.3.1+4', source)
-          assert count == 1
-          pub.write_text(source)
-          print('Side B 0.3.1: Biblioteca, Play, avisos brancos e versão confirmados')
+          source = Path('/tmp/sideb-build/lib/main.dart').read_text()
+          native = Path('/tmp/sideb-build/android/app/src/main/kotlin/com/sideb/musicratings/MainActivity.kt').read_text()
+          manifest = Path('/tmp/sideb-build/android/app/src/main/AndroidManifest.xml').read_text()
+          assert "John's Reviewr" in source
+          assert "v0.4.0" in source
+          assert "Sua biblioteca." in source
+          assert "playUri" in native and "SpotifyAppRemote.connect" in native
+          assert "John&#39;s Reviewr" in manifest
+          print("John's Reviewr 0.4.0: nome, biblioteca, ícone, player App Remote e fallback preparados")
           PY
           cd /tmp/sideb-build
           flutter pub get
@@ -91,16 +106,30 @@ jobs:
         run: |
           cd /tmp/sideb-build
           flutter build apk --debug
-      - name: Identificar o instalador
+      - name: Identificar instalador e assinatura Spotify
         shell: bash
         run: |
-          cp /tmp/sideb-build/build/app/outputs/flutter-apk/app-debug.apk /tmp/sideb-build/SideB-v0.3.1-debug.apk
-          printf 'Side B 0.3.1 (+4)\nCódigo: %s\nAbas: Agora | Biblioteca | Buscar | Dados\nPlay no Spotify: músicas e álbuns\nAvisos: texto branco\n' "$GITHUB_SHA" > /tmp/sideb-build/build-info.txt
-      - name: Disponibilizar APK identificado
+          cp /tmp/sideb-build/build/app/outputs/flutter-apk/app-debug.apk /tmp/sideb-build/Johns-Reviewr-v0.4.0-debug.apk
+          {
+            echo "John's Reviewr 0.4.0 (+5)"
+            echo "Commit: $GITHUB_SHA"
+            echo "Android package: com.sideb.musicratings (mantido para preservar avaliações)"
+            echo "Spotify Redirect URI: sideb://callback (mantida)"
+            echo "Spotify App Remote: 0.8.0"
+            echo "Prioridade: App Remote, depois Spotify Web API"
+            echo "Ícone: JR em disco de vinil preto e verde"
+            echo "SHA-1 do certificado deste APK:"
+            if [ -f "$HOME/.android/debug.keystore" ]; then
+              keytool -list -v -alias androiddebugkey -keystore "$HOME/.android/debug.keystore" \
+                -storepass android -keypass android | grep -m1 SHA1 || true
+            fi
+          } > /tmp/sideb-build/configuracao-spotify.txt
+          cat /tmp/sideb-build/configuracao-spotify.txt
+      - name: Disponibilizar APK John's Reviewr
         uses: actions/upload-artifact@v4
         with:
-          name: sideb-v0.3.1-android
+          name: johns-reviewr-v0.4.0-android
           path: |
-            /tmp/sideb-build/SideB-v0.3.1-debug.apk
-            /tmp/sideb-build/build-info.txt
+            /tmp/sideb-build/Johns-Reviewr-v0.4.0-debug.apk
+            /tmp/sideb-build/configuracao-spotify.txt
           if-no-files-found: error
