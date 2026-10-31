@@ -1,64 +1,37 @@
-# Side B. — avaliador de músicas Android
+# John's Reviewr 0.4 🎵
 
-Aplicativo Flutter para avaliar músicas com notas de **0,5 a 5 estrelas**, calcular médias por álbum, salvar avaliações localmente e exportar backups em JSON/CSV. Integração com Spotify via OAuth PKCE e tentativa de leitura do YouTube Music pelas sessões de mídia do Android.
+Aplicativo Android em Flutter e Kotlin para avaliar músicas em **meias estrelas**, calcular notas médias por álbum e organizar sua biblioteca Spotify. Funciona com música atual do Spotify/YouTube Music, busca e reprodução de faixas e álbuns, importação/exportação JSON/CSV e armazenamento local. Sem servidor próprio.
 
-## Gerar o APK pelo celular
+## O que mudou na v0.4
+- Nome exibido no aplicativo e launcher: **John's Reviewr**
+- Ícone exclusivo **JR em vinil preto, verde e branco**, inclusive na barra superior
+- **Spotify App Remote SDK 0.8.0** para tentar iniciar música ou álbum mesmo sem player Spotify Connect ativo
+- **Fallback Web API** quando o App Remote não está disponível
+- Biblioteca com playlists, álbuns salvos, curtidas e músicas avaliadas
+- Avisos flutuantes com texto branco
+- Compatibilidade de importação de backups anteriores do Side B
 
-1. Baixe o arquivo **sideb_flutter_id_atualizado.zip** disponibilizado na conversa do ChatGPT.
-2. Neste repositório GitHub, use **Add file > Upload files** e envie o ZIP **sem extrair**, na raiz do repositório.
-3. Confirme o upload com **Commit changes**.
-4. Abra a aba **Actions** e escolha **Compilar APK Side B.**.
-5. Quando a execução estiver concluída (verde), abra-a e baixe o artefato **sideb-android-apk**.
-6. Extraia `app-debug.apk` do artefato ZIP e instale no Android.
+## Baixar APK
 
-A automação é acionada ao enviar o ZIP e também pode ser executada manualmente.
+Abra a aba **Actions** e selecione a execução mais recente com ✅ Success. Em **Artifacts**, baixe **johns-reviewr-v0.4.0-android**, extraia **Johns-Reviewr-v0.4.0-debug.apk** e instale no Android.
 
-### Spotify
+**Antes de desinstalar o app anterior, exporte o backup JSON de suas avaliações.** Assinaturas debug geradas no GitHub Actions podem variar entre compilações e impedir uma atualização direta.
 
-O Client ID público fornecido pelo desenvolvedor está no código. Configure a Redirect URI **sideb://callback** no Spotify Developer Dashboard. Nunca envie Client Secret nem senhas.
+## Configuração Spotify (importante)
 
-### Observações
+Para o Spotify App Remote iniciar reprodução sem player ativo, configure cada Spotify Client ID no Spotify Developer Dashboard com:
 
-- O APK é **debug**, destinado a testes.
-- Não há backend nem banco de dados em nuvem.
-- É necessário que o usuário autorize o Spotify e ative permissão especial no Android para leitura das sessões de mídia, se quiser integrar o YouTube Music.
-- O YouTube Music pode limitar os dados exibidos e os controles.
-- **Ainda não foi possível compilar nem testar o app**: o primeiro Actions confirmará a viabilidade do build.
+- Redirect URI: `sideb://callback`
+- Android package: `com.sideb.musicratings`
+- SHA-1 do APK: consulte o arquivo **configuracao-spotify.txt** incluído no mesmo artefato ZIP do GitHub Actions.
+- Spotify instalado, atualizado e com usuário autenticado no celular; reprodução exige plano Premium nos cenários suportados.
 
+O nome **John's Reviewr** é exibido no Android e no aplicativo. Os identificadores técnicos legados do package, redirect URI e preferências `sideb_*` permanecem deliberadamente para preservar as avaliações e o login existentes. É possível renomear a entrada do aplicativo também no Spotify Developer Dashboard, mas sem alterar o Client ID.
 
-## Vários Client IDs (versão 0.2)
+App Remote é um SDK Beta: o comportamento depende da versão do aplicativo Spotify, das permissões e do SHA-1 registrado. Se a conexão falhar, o aplicativo usa como alternativa a Web API, que requer um dispositivo Spotify Connect ativo.
 
-A compilação aplica automaticamente a atualização do Side B para permitir **cadastrar, selecionar e excluir Client IDs** diretamente no celular, em **Dados > Gerenciar Client IDs** (também disponível na tela Agora). A lista fica salva localmente. Ao selecionar outro Client ID, o app encerra a autorização Spotify anterior e pede um novo login; **as notas não são apagadas**. Para trocar apenas de usuário Spotify, basta usar Desconectar / Conectar.
+O YouTube Music depende do sistema Android de sessões de mídia (é necessário conceder acesso às notificações); não oferece integração oficial de busca e reprodução equivalente.
 
-Cada Client ID deve ser configurado em seu próprio Spotify Developer Dashboard com a URI de redirecionamento `sideb://callback`. Client ID não é e-mail nem ID da pessoa. O app não altera limites de uso da API Spotify.
+## Código-fonte
 
-O ZIP `sideb_flutter_codigo_fonte.zip` na raiz contém o código-base; a compilação incorpora o suporte a múltiplos IDs por meio do patch versionado em `.github/patches/`, sem exigir outro upload.
-
-## Versão 0.3 — Biblioteca e reprodução por busca
-
-A nova versão permite:
-
-- Buscar músicas e álbuns no catálogo Spotify e iniciar a reprodução via API oficial.
-- Abrir um álbum e avaliar as faixas uma a uma.
-- Navegar pela **Sua Biblioteca** com filtros Playlists, Álbuns salvos, Curtidas e Avaliados.
-- Paginar a biblioteca (20 itens por página), atualizar puxando para baixo e reproduzir álbuns, playlists e faixas.
-- Mostrar avisos flutuantes com texto branco e contraste legível.
-
-**Permissões novas:** `user-library-read`, `playlist-read-private` e `playlist-read-collaborative`. Desconecte e conecte sua conta Spotify após atualizar, autorizando o novo acesso.
-
-**Reprodução:** funciona pelo Spotify Web API em uma conta Premium e em um dispositivo com Spotify ativo; quando não há dispositivo ativo, abra o Spotify e inicie uma música antes de repetir. O Side B não transmite áudio nem substitui o aplicativo Spotify. Em desenvolvimento, a leitura do conteúdo de playlists de terceiros é limitada pelas regras atuais da API.
-
-**Atualização do APK debug:** builds diferentes do GitHub Actions podem ser assinados por certificados de teste diferentes. Exporte as avaliações em JSON antes de atualizar. Se o Android recusar uma instalação sobre a anterior, desinstalar a versão velha apagará os dados locais; faça backup e importe-o depois.
-
-O GitHub Actions monta o código-base do ZIP e aplica os patches versionados em `.github/patches/`, incluindo a versão 0.3.
-
-
-## Instalação da versão 0.3.1 e APK anterior
-
-Para identificar a versão instalada, abra o Side B e veja o **v0.3.1 junto ao logotipo**, na barra superior. A navegação inferior deve conter **Agora / Biblioteca / Buscar / Dados**. Se aparecer **Álbuns** em vez de **Biblioteca**, a versão anterior está em execução.
-
-O artefato correto do GitHub Actions se chama **sideb-v0.3.1-android**, com o arquivo **SideB-v0.3.1-debug.apk** e \`build-info.txt\`.
-
-As compilações de teste no GitHub Actions usam chaves debug geradas no runner e podem ter **assinaturas diferentes**. Portanto, ao tentar instalar o novo APK sobre uma versão antiga, o Android pode rejeitar a atualização. **Antes de desinstalar qualquer versão, use Dados > Exportar JSON e guarde o backup fora do aparelho.** Só então desinstale a versão antiga, instale SideB-v0.3.1-debug.apk e importe o JSON. Desinstalar apaga notas e demais preferências salvas no app.
-
-Esta versão tem **Biblioteca** (playlists, álbuns salvos, músicas curtidas e avaliações), **Play na pesquisa** e **avisos com texto branco**. A reprodução Spotify depende de conta Premium e dispositivo ativo.
+O arquivo de código-fonte completo da versão 0.4 está disponível na conversa ChatGPT. A compilação deste repositório aplica alterações versionadas em `.github/patches/` sobre o ZIP-base, mantendo o histórico das versões anteriores.
