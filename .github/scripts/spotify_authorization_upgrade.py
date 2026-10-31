@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Aprimora a autorização Spotify do John's Reviewr 0.4.1 no build Flutter."""
+"""Aprimora a autorização e torna o Spotify acessível em Dados no John's Reviewr 0.4.2 no build Flutter."""
 from pathlib import Path
 import re
 import sys
@@ -60,14 +60,34 @@ new_btn = """            const SizedBox(height: 7),
 """
 assert m.count(old_btn) == 1, 'Painel da conta Spotify não encontrado'
 m = m.replace(old_btn, new_btn)
+
+# O painel de autenticação também aparece em Dados, sempre como Spotify.
+start = m.index('  Widget _connectionCard() => Container(')
+end = m.index('  Widget _reminder()', start)
+section = m[start:end]
+assert section.count("source == 'spotify'") == 3, 'Estrutura do painel Spotify alterada'
+section = section.replace('Widget _connectionCard() =>', 'Widget _connectionCard({bool forceSpotify = false}) =>')
+section = section.replace("source == 'spotify'", "(forceSpotify || source == 'spotify')")
+section = section.replace('          OutlinedButton.icon(\n            onPressed: () => media.openSettings(),',
+                          '          if (!forceSpotify) OutlinedButton.icon(\n            onPressed: () => media.openSettings(),')
+m = m[:start] + section + m[end:]
+
+data_anchor = """        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(20),
+"""
+assert m.count(data_anchor) == 1, 'Ponto de inserção da seção Dados não encontrado'
+m = m.replace(data_anchor,
+              "        const SizedBox(height: 16),\n        _connectionCard(forceSpotify: true),\n" + data_anchor,
+              1)
 assert 'v0.4.0' in m, 'Versão base não encontrada'
-m = m.replace('v0.4.0', 'v0.4.1')
+m = m.replace('v0.4.0', 'v0.4.2')
 main.write_text(m, encoding='utf-8')
 
 p = pubspec.read_text(encoding='utf-8')
-p, count = re.subn(r'(?m)^version: .*$', 'version: 0.4.1+6', p)
+p, count = re.subn(r'(?m)^version: .*$', 'version: 0.4.2+7', p)
 assert count == 1, 'Versão pubspec não encontrada'
 pubspec.write_text(p, encoding='utf-8')
 assert 'app-remote-control' in spotify.read_text(encoding='utf-8')
 assert 'Reautorizar reprodução' in main.read_text(encoding='utf-8')
-print("John's Reviewr 0.4.1: permissão App Remote, reautorização explícita e erros legíveis configurados")
+print("John's Reviewr 0.4.2: Conta Spotify também em Dados, autenticação e mensagens revisadas")
