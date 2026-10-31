@@ -1,4 +1,4 @@
-name: Compilar APK Side B.
+name: Compilar John's Reviewr Android
 
 on:
   workflow_dispatch:
@@ -123,12 +123,21 @@ jobs:
             echo "Prioridade: App Remote, depois Spotify Web API"
             echo "Ícone: JR em disco de vinil preto e verde"
             echo "SHA-1 do certificado deste APK:"
-            if [ -f "$HOME/.android/debug.keystore" ]; then
-              keytool -list -v -alias androiddebugkey -keystore "$HOME/.android/debug.keystore" \
-                -storepass android -keypass android | grep -m1 SHA1 || true
-            fi
           } > /tmp/sideb-build/configuracao-spotify.txt
-          cat /tmp/sideb-build/configuracao-spotify.txt
+          APK_SIGNER="$(find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          test -n "$APK_SIGNER"
+          "$APK_SIGNER" verify --print-certs /tmp/sideb-build/Johns-Reviewr-v0.4.0-debug.apk > /tmp/sideb-build/certificate-details.txt
+          python3 - <<'PY' >> /tmp/sideb-build/configuracao-spotify.txt
+          import re
+          from pathlib import Path
+          details=Path('/tmp/sideb-build/certificate-details.txt').read_text()
+          match=re.search(r'certificate SHA-1 digest:\s*([a-fA-F0-9]{40})', details)
+          if not match:
+              raise SystemExit('Não foi possível obter o SHA-1 do APK')
+          sha=match.group(1).upper()
+          print(':'.join(sha[i:i+2] for i in range(0,len(sha),2)))
+          PY
+                    cat /tmp/sideb-build/configuracao-spotify.txt
       - name: Disponibilizar APK John's Reviewr
         uses: actions/upload-artifact@v4
         with:
