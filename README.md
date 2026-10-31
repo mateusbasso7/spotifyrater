@@ -24,3 +24,12 @@ O Client ID público fornecido pelo desenvolvedor está no código. Configure a 
 - É necessário que o usuário autorize o Spotify e ative permissão especial no Android para leitura das sessões de mídia, se quiser integrar o YouTube Music.
 - O YouTube Music pode limitar os dados exibidos e os controles.
 - **Ainda não foi possível compilar nem testar o app**: o primeiro Actions confirmará a viabilidade do build.
+
+
+## Vários Client IDs (versão 0.2)
+
+A compilação aplica automaticamente a atualização do Side B para permitir **cadastrar, selecionar e excluir Client IDs** diretamente no celular, em **Dados > Gerenciar Client IDs** (também disponível na tela Agora). A lista fica salva localmente. Ao selecionar outro Client ID, o app encerra a autorização Spotify anterior e pede um novo login; **as notas não são apagadas**. Para trocar apenas de usuário Spotify, basta usar Desconectar / Conectar.
+
+Cada Client ID deve ser configurado em seu próprio Spotify Developer Dashboard com a URI de redirecionamento `sideb://callback`. Client ID não é e-mail nem ID da pessoa. O app não altera limites de uso da API Spotify.
+
+O ZIP `sideb_flutter_codigo_fonte.zip` na raiz contém o código-base; a compilação incorpora o suporte a múltiplos IDs por meio do patch versionado em `.github/patches/`, sem exigir outro upload.
