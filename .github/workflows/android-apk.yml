@@ -57,7 +57,7 @@ jobs:
           echo "90ab2cccc58477e4323ce1a35d4e7762c95f0e39ee8c2c0609ec1fb6959304c0  /tmp/sideb_v03.b64" | sha256sum -c -
           base64 -d /tmp/sideb_v03.b64 | gzip -d | (cd /tmp/sideb-build && git apply -)
           # Correção pontual do fechamento do painel de detalhes do álbum (Side B 0.3).
-          python3 -c 'from pathlib import Path; p=Path("/tmp/sideb-build/lib/main.dart"); s=p.read_text(); old="        ]))),\\n      )),\\n    );\\n  }\\n\\n  Widget _libraryView".replace("\\\\n", "\\n"); new=old.replace("      )),", "      ),"); assert old in s, "Painel do álbum mudou; revise o hotfix"; p.write_text(s.replace(old, new, 1))'
+          sed -i '732s/^      )),/      ),/' /tmp/sideb-build/lib/main.dart
           rm -f /tmp/sideb-build/test/widget_test.dart
           cp "$GITHUB_WORKSPACE/test/spotify_config_test.dart" /tmp/sideb-build/test/spotify_config_test.dart
           # file_picker 8.x usa compileSdk 34, incompatível com flutter_plugin_android_lifecycle (API 36).
