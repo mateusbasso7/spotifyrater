@@ -5,12 +5,15 @@ on:
   push:
     branches: [main]
     paths:
+      - 'sideb_flutter_codigo_fonte.zip'
       - 'sideb_flutter_id_atualizado.zip'
       - '.github/workflows/android-apk.yml'
 
 jobs:
   apk:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Obter arquivos
         uses: actions/checkout@v4
@@ -27,9 +30,17 @@ jobs:
       - name: Montar projeto Flutter
         shell: bash
         run: |
-          test -f sideb_flutter_id_atualizado.zip || { echo 'Envie sideb_flutter_id_atualizado.zip para a raiz do repositório'; exit 1; }
+          set -euxo pipefail
+          if [ -f sideb_flutter_id_atualizado.zip ]; then
+            ZIP=sideb_flutter_id_atualizado.zip
+          elif [ -f sideb_flutter_codigo_fonte.zip ]; then
+            ZIP=sideb_flutter_codigo_fonte.zip
+          else
+            echo 'Nenhum ZIP do Side B encontrado na raiz do repositorio'
+            exit 1
+          fi
           mkdir -p /tmp/sideb-sources
-          unzip -q sideb_flutter_id_atualizado.zip -d /tmp/sideb-sources
+          unzip -q "$ZIP" -d /tmp/sideb-sources
           flutter create --platforms=android --project-name=musicratings --org=com.sideb /tmp/sideb-build
           cp /tmp/sideb-sources/pubspec.yaml /tmp/sideb-build/pubspec.yaml
           cp -R /tmp/sideb-sources/lib/. /tmp/sideb-build/lib/
@@ -37,6 +48,8 @@ jobs:
           cp /tmp/sideb-sources/android_overrides/AndroidManifest.xml /tmp/sideb-build/android/app/src/main/AndroidManifest.xml
           mkdir -p /tmp/sideb-build/android/app/src/main/kotlin/com/sideb/musicratings
           cp -R /tmp/sideb-sources/android_overrides/kotlin/com/sideb/musicratings/. /tmp/sideb-build/android/app/src/main/kotlin/com/sideb/musicratings/
+          # O ZIP original tinha o primeiro Client ID: aplicar o Client ID atualizado informado no chat.
+          sed -i 's/f2faa3f3a4784c64bc6bcdbf90e23e9d/a0df0a300a1d4905b6ceb08f996b56f3/g' /tmp/sideb-build/lib/src/spotify.dart
           cd /tmp/sideb-build
           flutter pub get
           flutter test
