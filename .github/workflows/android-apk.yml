@@ -50,6 +50,10 @@ jobs:
           cp -R /tmp/sideb-sources/android_overrides/kotlin/com/sideb/musicratings/. /tmp/sideb-build/android/app/src/main/kotlin/com/sideb/musicratings/
           # O ZIP original tinha o primeiro Client ID: aplicar o Client ID atualizado informado no chat.
           sed -i 's/f2faa3f3a4784c64bc6bcdbf90e23e9d/a0df0a300a1d4905b6ceb08f996b56f3/g' /tmp/sideb-build/lib/src/spotify.dart
+          # Atualiza o app para permitir múltiplos Client IDs, sem precisar substituir o ZIP do usuário.
+          base64 -d "$GITHUB_WORKSPACE/.github/patches/sideb-multi-client-ids.diff.gz.b64" | gzip -d | (cd /tmp/sideb-build && git apply -)
+          rm -f /tmp/sideb-build/test/widget_test.dart
+          cp "$GITHUB_WORKSPACE/test/spotify_config_test.dart" /tmp/sideb-build/test/spotify_config_test.dart
           cd /tmp/sideb-build
           flutter pub get
           flutter test
