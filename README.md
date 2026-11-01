@@ -52,3 +52,20 @@ Confira no Spotify Developer Dashboard de **cada Client ID usado no celular**:
 O SDK já usa `showAuthView(true)`; a nova versão adiciona a permissão também ao OAuth Web PKCE. A autorização depende do Spotify instalado e pode continuar falhando por configuração ou limitações do SDK/serviço. Se for o caso, o aplicativo informa o diagnóstico em português.
 
 **Atualização de APK debug:** exporte suas notas (Dados > Exportar JSON) antes de desinstalar a versão anterior. APKs gerados em runners diferentes podem ter certificados debug distintos e exigirem reinstalação.
+
+## John's Reviewr 0.5: YouTube e avaliações entre serviços
+
+**Pesquisa:** em Dados → YouTube • API e conta Google, cadastre uma API Key do Google Cloud Console com YouTube Data API v3 habilitada. Em Buscar, selecione YouTube Music / vídeos. Resultados são vídeos, não faixas verificadas do catálogo YouTube Music. A opção Pesquisar diretamente no YouTube Music abre uma busca externa mesmo sem chave.
+
+**Biblioteca parcial do YouTube:**
+1. No Google Cloud, habilite YouTube Data API v3, configure a Tela de consentimento OAuth, escopo https://www.googleapis.com/auth/youtube.readonly e inclua a conta nos usuários de teste se necessário.
+2. Crie credencial OAuth Android com o pacote com.sideb.musicratings e o SHA-1 do APK em configuracao-spotify.txt. O SHA-1 muda entre APKs debug assinados com chaves diferentes.
+3. Crie também OAuth Client ID do tipo Aplicativo Web no mesmo projeto. Copie apenas o Client ID, não o Client Secret.
+4. No app, em Dados → Configurar API e OAuth Google, informe API Key e OAuth Web Client ID. Se alterar este último depois de conectar, reinicie o app.
+5. Conecte Google, autorize leitura e vá a Biblioteca → Playlists YouTube / Curtidas YouTube. A API não dá acesso a toda a biblioteca privada do YouTube Music.
+
+**Notas entre plataformas:** use Vincular em vídeos ou faixas em reprodução. O app sugere correspondências conservadoras de título/artista, mas a associação só acontece após confirmação manual. Os vínculos são armazenados localmente e preservados no backup JSON.
+
+**Importante:** links abrem o YouTube Music e podem exigir Play manual. O app não contorna Premium, DRM nem regras de fundo. Chaves de API em apps móveis podem ser extraídas; restrinja a API no Google Cloud, monitore cotas e não compartilhe segredos. Google pode exigir verificação de OAuth para distribuição pública.
+
+**Atualização:** exporte JSON antes de desinstalar builds debug anteriores; a assinatura pode mudar.
