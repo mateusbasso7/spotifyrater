@@ -100,7 +100,7 @@ jobs:
           native = Path('/tmp/sideb-build/android/app/src/main/kotlin/com/sideb/musicratings/MainActivity.kt').read_text()
           manifest = Path('/tmp/sideb-build/android/app/src/main/AndroidManifest.xml').read_text()
           assert "John's Reviewr" in source
-          assert "v0.5.0" in source
+          assert "v0.4.2" in source
           assert "Sua biblioteca." in source
           assert "playUri" in native and "SpotifyAppRemote.connect" in native
           assert 'app-remote-control' in Path('/tmp/sideb-build/lib/src/spotify.dart').read_text()
